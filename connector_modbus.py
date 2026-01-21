@@ -70,6 +70,30 @@ class ModbusDataCollector2000Delux:
             f = v.get("f",1)
             data[k] = self.invSun2000.read(s) * f
         
+
+        # distribute battery charge/discharge power across phases proportional to phase currents
+        try:
+            ChargeDischargePower = float(self.invSun2000.read(registers.BatteryEquipmentRegister.ChargeDischargePower))
+            i1 = float(data.get('/Ac/L1/Current', 0) or 0)
+            i2 = float(data.get('/Ac/L2/Current', 0) or 0)
+            i3 = float(data.get('/Ac/L3/Current', 0) or 0)
+            total = abs(i1) + abs(i2) + abs(i3)
+            if total == 0:
+                adj1 = adj2 = adj3 = ChargeDischargePower / 3.0
+            else:
+                adj1 = ChargeDischargePower * (abs(i1) / total)
+                adj2 = ChargeDischargePower * (abs(i2) / total)
+                adj3 = ChargeDischargePower * (abs(i3) / total)
+
+            if '/Ac/L1/Power' in data:
+                data['/Ac/L1/Power'] = float(data['/Ac/L1/Power']) - adj1
+            if '/Ac/L2/Power' in data:
+                data['/Ac/L2/Power'] = float(data['/Ac/L2/Power']) - adj2
+            if '/Ac/L3/Power' in data:
+                data['/Ac/L3/Power'] = float(data['/Ac/L3/Power']) - adj3
+        except Exception:
+            pass
+
         return data
 
 
@@ -122,6 +146,26 @@ class ModbusDataCollector2000Delux:
             data['/Ac/L2/Current']) * self.power_correction_factor
         data['/Ac/L3/Power'] = cosphi * float(data['/Ac/L3/Voltage']) * float(
             data['/Ac/L3/Current']) * self.power_correction_factor
+
+        # distribute battery charge/discharge power across phases proportional to phase currents
+        try:
+            ChargeDischargePower = float(self.invSun2000.read(registers.BatteryEquipmentRegister.ChargeDischargePower))
+            i1 = float(data.get('/Ac/L1/Current', 0) or 0)
+            i2 = float(data.get('/Ac/L2/Current', 0) or 0)
+            i3 = float(data.get('/Ac/L3/Current', 0) or 0)
+            total = abs(i1) + abs(i2) + abs(i3)
+            if total == 0:
+                adj1 = adj2 = adj3 = ChargeDischargePower / 3.0
+            else:
+                adj1 = ChargeDischargePower * (abs(i1) / total)
+                adj2 = ChargeDischargePower * (abs(i2) / total)
+                adj3 = ChargeDischargePower * (abs(i3) / total)
+
+            data['/Ac/L1/Power'] = float(data['/Ac/L1/Power']) - adj1
+            data['/Ac/L2/Power'] = float(data['/Ac/L2/Power']) - adj2
+            data['/Ac/L3/Power'] = float(data['/Ac/L3/Power']) - adj3
+        except Exception:
+            pass
 
         return data
 

@@ -113,17 +113,17 @@ class DbusSun2000MeterService:
         self._dbusservice.add_path('/Mgmt/Connection', 'Internal Wifi Modbus TCP')
 
         # Create the mandatory objects
-        self._dbusservice.add_path('/DeviceInstance', settings.get_vrm_instance())
+        self._dbusservice.add_path('/DeviceInstance', settings.get_vrm_instance()+40)
         self._dbusservice.add_path('/ProductId', 0)  # Huawei does not have a product id
         self._dbusservice.add_path('/ProductName', productname)
-        self._dbusservice.add_path('/CustomName', settings.get("custom_name"))
+        self._dbusservice.add_path('/CustomName', settings.get("custom_name")+" Meter")
         self._dbusservice.add_path('/FirmwareVersion', 1.0)
         self._dbusservice.add_path('/HardwareVersion', 0)
         self._dbusservice.add_path('/Connected', 1, writeable=True)
 
         # Create the mandatory objects
         self._dbusservice.add_path('/Latency', None)
-        self._dbusservice.add_path('/Role', "pvinverter")
+        self._dbusservice.add_path('/Role', "grid")
         self._dbusservice.add_path('/Position', settings.get("position"))  # 0 = AC Input, 1 = AC-Out 1, AC-Out 2
         self._dbusservice.add_path('/Serial', serialnumber)
         self._dbusservice.add_path('/ErrorCode', 0)
